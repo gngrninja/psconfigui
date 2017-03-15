@@ -67,7 +67,11 @@ function Export-Config { #Begin function Export-Config
             Mandatory
         )]
         [ValidateSet('JSON','XML')]
-        $ExportAs
+        $ExportAs,
+        [Parameter(
+            Mandatory
+        )]
+        $ConfigurationOptions
     )
 
     #If there's a file, we're gonna back it up!
@@ -286,13 +290,13 @@ function Invoke-ConfigurationGeneration { #Begin function Invoke-ConfigurationGe
 
         #Handle different types 
         #Export the object we created as the current configuration
-        Export-Config -ExportAs $ExportAs
+        Export-Config -configurationOptions $ConfigurationOptions -ExportAs $ExportAs
 
         Write-Verbose "Exporting generated configuration file to [$configFile]!"
 
     } else { #End actions for no options passed in, begin actions for if they are
         
-        Export-Config -ExportAs $ExportAs
+        Export-Config -configurationOptions $ConfigurationOptions -ExportAs $ExportAs
 
         Write-Verbose "Exporting passed in options as configuration file to [$configFile]!"
 
