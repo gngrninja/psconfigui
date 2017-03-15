@@ -9,6 +9,7 @@ param(
         Mandatory = $false
     )]
     [ValidateSet('XML','JSON')]
+    [String]
     $ImportAs = 'XML'
 )
 
@@ -59,7 +60,7 @@ function Import-Config { #Begin function Import-Config
 
 } #End function Import-Config
 
-function Export-Config {
+function Export-Config { #Begin function Export-Config
     [cmdletbinding()]
     param(
         [Parameter(
@@ -69,24 +70,48 @@ function Export-Config {
         $ExportAs
     )
 
-    Switch ($ExportAs) {
+    #If there's a file, we're gonna back it up!
+    if (Test-Path -Path $configFile) {
+
+        $backup = $true       
+
+    }
+
+    Switch ($ExportAs) { #Begin config type switch
 
         'JSON' {
 
-            $ConfigurationOptions | ConvertTo-Json | Out-File -FilePath $configFile
+            if ($backup) {
+                
+                Get-Content $configFile | Out-File -FilePath $configFile.Replace('.json','.json.bak')
+
+                Write-Verbose "Backed up existing configuration to $($configFile.Replace('.json','.json.bak'))!"
+                Write-Verbose ""
+
+            }
+            
+            $ConfigurationOptions | ConvertTo-Json | Out-File -FilePath $configFile            
 
         }
 
         'XML' {
 
+            if ($backup) {
+
+                Get-Content $configFile | Out-File -FilePath $configFile.Replace('.xml','.xml.bak')
+
+                Write-Verbose "Backed up existing configuration to $($configFile.Replace('.xml','.xml.bak'))!"
+                Write-Verbose ""
+
+            }            
+
             $ConfigurationOptions | Export-Clixml -Path $configFile
 
         }
 
-    }    
+    } #End config type switch
 
-}
-
+} #End function Export-Config
 
 function Invoke-UserAction { #Begin function Invoke-UserAction
     [cmdletbinding()]
@@ -133,7 +158,8 @@ function Invoke-UserAction { #Begin function Invoke-UserAction
                 $lastLogonDays = $null
                 $notes         = $errorMessage 
 
-                Write-Error "Error while calculating last logon days [$errorMessage]"                 
+                Write-Warning "Issue encountered while calculating last logon days [$errorMessage]"   
+                Write-Warning ""              
 
             }
 
